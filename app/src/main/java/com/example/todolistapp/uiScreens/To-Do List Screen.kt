@@ -23,14 +23,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,9 +49,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todolistapp.ui.theme.LightBlue
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoListScreen() {
-    var tasksList = remember { mutableStateListOf<String>("Hello", "Potato") }
+    val tasksList = remember { mutableStateListOf<String>() }
+    var task by remember { mutableStateOf("") }
+    var isSheetOpen by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val focusRequester = remember { FocusRequester() }
 
     Column(
         modifier = Modifier
@@ -72,7 +88,7 @@ fun ToDoListScreen() {
         ) {
             Spacer(modifier = Modifier.height(90.dp))
             Button(onClick = {
-                println("hello")
+                isSheetOpen = true
             },
                 colors = ButtonDefaults.buttonColors(
                     contentColor = LightBlue,
@@ -89,6 +105,64 @@ fun ToDoListScreen() {
                     modifier = Modifier.requiredSize(55.dp)
                 )
             }
+
+            if (isSheetOpen) {
+                ModalBottomSheet(
+                    sheetState = sheetState,
+                    onDismissRequest = {
+                        isSheetOpen = false
+                    },
+                    containerColor = LightBlue
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(LightBlue)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(40.dp))
+                        TextField(
+                            value = task,
+                            onValueChange = { text ->
+                                task = text
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = LightBlue,
+                                unfocusedContainerColor = LightBlue,
+                                unfocusedIndicatorColor = Color.White,
+                                focusedIndicatorColor = Color.White
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester),
+                        )
+
+                        LaunchedEffect(Unit) {
+                            focusRequester.requestFocus()
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp ))
+                        Button(onClick = {
+                                if (task.isNotBlank()) {
+                                    tasksList += task
+                                    isSheetOpen = false
+                                    task = ""
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Save",
+                                color = Color.Black
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.width(20.dp))
             Text(
                 text = "Add new task",
