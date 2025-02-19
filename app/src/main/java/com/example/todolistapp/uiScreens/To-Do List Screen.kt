@@ -1,5 +1,6 @@
 package com.example.todolistapp.uiScreens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ fun ToDoListScreen() {
     var isSheetOpen by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -76,7 +78,7 @@ fun ToDoListScreen() {
                 })
                 Spacer(modifier = Modifier.height(10.dp))
             }
-    }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -149,12 +151,16 @@ fun ToDoListScreen() {
 
                         Spacer(modifier = Modifier.height(40.dp ))
                         Button(onClick = {
-                                if (task.isNotBlank()) {
-                                    tasksList += task
+                            if (task.isNotBlank()) {
+                                if (!tasksList.contains(task)) {
+                                    tasksList.add(task)
                                     isSheetOpen = false
                                     task = ""
+                                } else {
+                                    Toast.makeText(context, "Task already exists", Toast.LENGTH_SHORT).show()
                                 }
-                            },
+                            }
+                        },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.White
                             )
@@ -203,13 +209,6 @@ fun BuildTask(task: String, onTaskDeleted: (String) -> Unit) {
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp
         )
-        Icon(
-            imageVector = Icons.Default.Edit,
-            contentDescription = "Edit task",
-            modifier = Modifier
-                .weight(1f)
-                .requiredSize(35.dp)
-        )
         Button(onClick = {
             onTaskDeleted(task)
         },
@@ -217,7 +216,7 @@ fun BuildTask(task: String, onTaskDeleted: (String) -> Unit) {
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White
             )
-            ) {
+        ) {
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete task",
