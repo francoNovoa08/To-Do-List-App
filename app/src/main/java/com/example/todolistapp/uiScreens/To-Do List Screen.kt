@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,14 +63,17 @@ fun ToDoListScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .statusBarsPadding()
     ) {
         LazyColumn(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(tasksList) { task ->
-                BuildTask(task)
+            items(tasksList, key = {it}) { task ->
+                BuildTask(task = task, onTaskDeleted = { taskToDelete ->
+                    tasksList.remove(taskToDelete)
+                })
                 Spacer(modifier = Modifier.height(10.dp))
             }
     }
@@ -176,9 +181,10 @@ fun ToDoListScreen() {
 }
 
 @Composable
-fun BuildTask(task: String) {
+fun BuildTask(task: String, onTaskDeleted: (String) -> Unit) {
     Row(
         modifier = Modifier
+            .background(Color.White)
             .fillMaxWidth()
             .padding(horizontal = 48.dp, vertical = 16.dp)
             .clip(RoundedCornerShape(12.dp))
@@ -192,10 +198,32 @@ fun BuildTask(task: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentWidth(Alignment.Start)
-                .padding(6.dp),
+                .padding(6.dp)
+                .weight(4f),
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp
         )
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Edit task",
+            modifier = Modifier
+                .weight(1f)
+                .requiredSize(35.dp)
+        )
+        Button(onClick = {
+            onTaskDeleted(task)
+        },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White
+            )
+            ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete task",
+                modifier = Modifier.requiredSize(35.dp)
+            )
+        }
     }
 }
 
